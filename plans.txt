@@ -46,7 +46,7 @@ Player voice commands:
         say "play"
 
         say "quit"
-
+165hz - 660hz
 
 sound1 = pyglet.resource.media('piano-keys/E3.mp3')
 sound2 = pyglet.resource.media('piano-keys/F3.mp3')

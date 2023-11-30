@@ -1,0 +1,12 @@
+We will first start the game 'g 0'
+play 3 points
+
+Then we will pause the game 'g 1'
+
+Then we will choose insane 'l 3'
+play 2 points
+
+Then you will choose a difficulty 'l 1, 2, 3'
+
+pause the game.
+

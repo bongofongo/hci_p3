@@ -416,7 +416,7 @@ def keep_first_word(input_string):
     return output_string
 def options():
     if (stop_instructions == 0):
-        say("The paddle moves with the pitch of your voice from E3 to C5.")
+        say("The paddle moves by whistling: whistle higher for a higher position.")
     if (stop_instructions == 0):
         say("Say easy, medium, or hard to select your difficulty")
     if (stop_instructions == 0):
@@ -447,10 +447,10 @@ def listen_to_speech():
                 client.send_message('/l', 3)
                 say("Insane mode")
             if (phrase == "easy"):
-                client.send_message('/l', 2)
+                client.send_message('/l', 1)
                 say("easy mode starting")
             if (phrase == "hard"):
-                client.send_message('/l', 1)
+                client.send_message('/l', 2)
                 say("hard mode")
             if (phrase == "pause"):
                 client.send_message('/g', 0)
@@ -520,9 +520,10 @@ def listen_to_speech():
 # TODO: you can use this for input, add function like "client.send_message()" to control the host game
 # -------------------------------------#
 
+#Made for whistling
 def map_frequency_to_range(frequency):
-    min_frequency = 1  # Minimum frequency in Hz
-    max_frequency = 300  # Maximum frequency in Hz
+    min_frequency = 800  # Minimum frequency in Hz
+    max_frequency = 1600  # Maximum frequency in Hz
 
     min_output = 0  # Minimum value in the output range
     max_output = 450  # Maximum value in the output range
