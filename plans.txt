@@ -1,0 +1,145 @@
+Sounds that have to be added:
+
+Idea; have female voice be p2. male voice is p1
+
+    Powerups: !
+
+        Freeze p1 "FROZEN"
+        freeze p2
+        big paddle p1 "BIG PADDLE"
+        big paddle p2
+
+    game: 
+
+        score " !
+        paddle hit !
+        paddle miss !
+
+    Menu:
+
+        p1 connected
+        say "player 1 connected"
+        p2 connected
+        say "player 2 connected"
+
+        game start
+        say "to start, say play"
+        
+        instructions:
+        say "for instructions, please say 'help'"
+
+        level:
+
+            easy
+            hard
+            insane
+            say "for level selection: please say "easy, hard, or insane
+
+Player voice commands:
+
+    Menu:
+
+        say "easy"
+        say "hard" 
+        say "insane"
+
+        say "play"
+
+        say "quit"
+
+    Game: 
+
+        say "pause"
+
+# this is how client send messages to server
+      # send paddle position 200 (it should be between 0 - 450):
+      # client.send_message('/p', 200)
+      # set level to 3:
+      # client.send_message('/l', 3)
+      # start the game:
+      # client.send_message('/g', 1)
+      # pause the game:
+      # client.send_message('/g', 0)
+      # big paddle if received power up:
+      # client.send_message('/b', 0)
+
+E3 to E4 note is a range from 165 to 330hz. 
+
+engine.startLoop(False)
+engine.iterate()
+engine.endLoop()
+
+from subprocess import call
+
+phrase = "Hi everyone"
+call(["python3", "speak.py", phrase, voice1])
+
+    engine.say('Menu: To select your level please say: easy, hard, or insane.')
+    engine.say('To start, say play.')
+    engine.say('To pause and go to the menu, say pause.')
+    engine.say('To quit the program, say quit.')
+    engine.say('To hear these instructions again, say help.')
+
+
+
+def power_freeze_p1():
+    #engine.setProperty('voice', voiceP1)
+    engine.say("Player 2: freeze")
+    engine.runAndWait()
+
+def power_freeze_p2():
+    #engine.setProperty('voice', voiceP2)
+    engine.say("Player 1: freeze")
+    engine.runAndWait()
+
+def power_bigPaddle_p1():
+    #engine.setProperty('voice', voices[6].id)
+    engine.say("Player 1: big paddle")
+    engine.runAndWait()
+
+def power_bigPaddle_p2():
+    #engine.setProperty('voice', voices[15].id)
+    engine.say("Player 2: big paddle")
+    engine.runAndWait()
+
+def say_score(s1, s2):
+    s1 = str(s1)
+    s2 = str(s2)
+    #engine.setProperty('voice', voice1)
+    engine.say(s1 + "to" + s2)
+    engine.runAndWait()
+
+def instructions():
+    #engine.setProperty('voice', voice1)
+    engine.setProperty('volume', 0.8)
+
+    engine.setProperty('volume', 1.0)
+    engine.runAndWait()
+
+def game_starting():
+    #engine.setProperty('voice', voice1)
+    engine.say('Game starting.')
+    engine.runAndWait()
+
+def initialize_player_voices():
+    engine.setProperty('rate', 140)
+    engine.setProperty('voice', voiceP1)
+    engine.say("I am player 1's voice.")
+    engine.setProperty('voice', voiceP2)
+    engine.say("I am player 2's voice.")
+    engine.setProperty('rate', 170)
+    engine.runAndWait()
+
+def say_powerUp():
+    #engine.setProperty('voice', voice1)
+    engine.say('Power up!')
+
+# Player 1 voice assistant (male)
+voiceP1 = voices[6].id
+
+# Player 2 voice assistant (female)
+voiceP2 = voices[15].id
+
+objc
+pip3 install -r requirements.txt
+pip3 install pyt-ttyz!!!

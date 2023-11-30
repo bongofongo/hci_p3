@@ -33,10 +33,28 @@ import pyglet
 import sys
 from playsound import playsound
 import argparse
+import pyttsx3
+from synthesizer import Player, Synthesizer, Waveform
+from pocketsphinx import LiveSpeech
+
+
+player = Player()
+player.open_stream()
+synthesizer = Synthesizer(osc1_waveform=Waveform.sine, osc1_volume=1.0, use_osc2=False)
+
+def balltobeep(x):
+    return 540 - (x * 0.67)
+
 
 from pythonosc import osc_server
 from pythonosc import dispatcher
 from pythonosc import udp_client
+from pydub import AudioSegment
+from pydub.generators import Sine
+import simpleaudio as sa
+
+
+
 
 mode = ''
 debug = False
@@ -99,6 +117,7 @@ client_2 = None
 def on_receive_game_level(address, args, l):
     global level
     level = l
+    say("game level:" + str(l))
     if (client_1 != None):
         client_1.send_message("/level", l)
     if (client_2 != None):
@@ -117,6 +136,7 @@ def on_receive_connection_1(address, args, ip):
     global player_1_ip
     player_1_ip = ip
     client_1 = udp_client.SimpleUDPClient(player_1_ip, player_1_port)
+    say("player 1 connected")
     print("> player 1 connected: " + ip)
 
 def on_receive_paddle_2(address, args, paddle):
@@ -128,11 +148,13 @@ def on_receive_connection_2(address, args, ip):
     global player_2_ip
     player_2_ip = ip
     client_2 = udp_client.SimpleUDPClient(player_2_ip, player_2_port)
+    say("player 2 connected")
     print("> player 2 connected: " + ip)
 
 def on_receive_bigpaddle_1(address, args, b):
     global p1_activated
     global last_power_up
+    say("player 1 received a big paddle")
     if (power_up_type == 3):
         p1_activated = 1
         last_power_up = time.time()
@@ -144,6 +166,7 @@ def on_receive_bigpaddle_1(address, args, b):
 def on_receive_bigpaddle_2(address, args, b):
     global p2_activated
     global last_power_up
+    say("player 2 received a big paddle")
     if (power_up_type == 4):
         p2_activated = 1
         last_power_up = time.time()
@@ -171,12 +194,46 @@ dispatcher_2.map("/b", on_receive_bigpaddle_2, "b")
 # TODO: add audio output here so that you can play the game eyes-free
 # -------------------------------------#
 #play some fun sounds?
+
+#pyttsx3 initialization
+engine = pyttsx3.init()
+voices = engine.getProperty('voices')
+
+from subprocess import call
+    
+# HELP FUNCTION found on stack overflow on https://stackoverflow.com/questions/65977155/change-pyttsx3-language
+# -sergej
+def change_voice(engine, language, gender='VoiceGenderFemale'):
+    for voice in engine.getProperty('voices'):
+        if language in voice.languages and gender == voice.gender:
+            engine.setProperty('voice', voice.id)
+            return voice.id
+
+    raise RuntimeError("Language '{}' for gender '{}' not found".format(language, gender))
+
+voice1 = change_voice(engine, "en_US", "VoiceGenderFemale")
+
 def hit():
-    playsound('hit.wav', False)
+    playsound('audio_samples/ball_hit.mp3', False)
 
 hit()
 
+def miss():
+    playsound('audio_samples/ball_miss.mp3', False)
+
+miss()
+
+
+def say(s):
+    call(["python3", "speak.py", s, voice1])
+
+#say("For instructions, please say 'help'.")
+
+#winsound.Beep(330, 1000)
+
 # used to send messages to host
+def play_sound(freq):
+    player.play_wave(synthesizer.generate_constant_wave(freq, 0.1))
 
 if mode == 'p1':
     host_port = host_port_1
@@ -190,6 +247,9 @@ if (mode == 'p1') or (mode == 'p2'):
 # functions receiving messages from host
 def on_receive_ball(address, *args):
     # print("> ball position: (" + str(args[0]) + ", " + str(args[1]) + ")")
+    #play_sound(balltobeep(args[1]))
+    play_beep2(balltobeep(args[1]))
+    #winsound.beep(balltobeep(args[1], 100))
     pass
 
 def on_receive_paddle(address, *args):
@@ -202,6 +262,7 @@ def on_receive_hitpaddle(address, *args):
     print("> ball hit at paddle " + str(args[0]) )
 
 def on_receive_ballout(address, *args):
+    miss()
     print("> ball went out on left/right side: " + str(args[0]) )
 
 def on_receive_ballbounce(address, *args):
@@ -210,23 +271,39 @@ def on_receive_ballbounce(address, *args):
     print("> ball bounced on up/down side: " + str(args[0]) )
 
 def on_receive_scores(address, *args):
+    phrase = str(args[0]) + "to " + str(args[1])
+    say(phrase)
     print("> scores now: " + str(args[0]) + " vs. " + str(args[1]))
 
 def on_receive_level(address, *args):
+    phrase = str(args[0])
+    say(phrase)
     print("> level now: " + str(args[0]))
 
+
 def on_receive_powerup(address, *args):
+    say("power up")
     print("> powerup now: " + str(args[0]))
+    if (args[0] == 1):
+        say("1 is frozen")
+    elif (args[0] == 2):
+        say("2 is frozen")
+    elif (args[0] == 3):
+        say("1 recieved big paddle")
+    elif (args[0] == 3):
+        say("2 recieved big paddle")
     # 1 - freeze p1
     # 2 - freeze p2
     # 3 - adds a big paddle to p1, not use
     # 4 - adds a big paddle to p2, not use
 
 def on_receive_p1_bigpaddle(address, *args):
+    say("1 has a big paddle")
     print("> p1 has a big paddle now")
     # when p1 activates their big paddle
 
 def on_receive_p2_bigpaddle(address, *args):
+    say("2 has a big paddle")
     print("> p2 has a big paddle now")
     # when p2 activates their big paddle
 
@@ -258,18 +335,28 @@ import numpy as num
 import pyaudio
 import wave
 
+
+
 # PyAudio object.
 p = pyaudio.PyAudio()
 # Open stream.
 stream = p.open(format=pyaudio.paFloat32,
     channels=1, rate=44100, input=True,
-    frames_per_buffer=1024)
+    frames_per_buffer=1024, output=True)
 # Aubio's pitch detection.
 pDetection = aubio.pitch("default", 2048,
     2048//2, 44100)
 # Set unit.
+
 pDetection.set_unit("Hz")
 pDetection.set_silence(-40)
+
+def play_beep2(frequency, duration=4, volume=0.5):  
+    sample_rate = 44100 
+    t = num.linspace(0, duration / 1000, int(sample_rate * duration / 1000), endpoint=False)
+    signal = volume * num.sin(2 * num.pi * frequency * t).astype(num.float32)
+
+    stream.write(signal.tostring())
 # -------------------------------------#
 
 quit = False
@@ -285,25 +372,45 @@ p2_score = 0
 def listen_to_speech():
     global quit
     while not quit:
-        # obtain audio from the microphone
-        r = sr.Recognizer()
-        with sr.Microphone() as source:
-            print("[speech recognition] Say something!")
-            audio = r.listen(source)
-        # recognize speech using Google Speech Recognition
-        try:
-            # for testing purposes, we're just using the default API key
-            # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
-            # instead of `r.recognize_google(audio)`
-            recog_results = r.recognize_google(audio)
-            print("[speech recognition] Google Speech Recognition thinks you said \"" + recog_results + "\"")
-            # if recognizing quit and exit then exit the program
-            if recog_results == "play" or recog_results == "start":
+        for phrase in LiveSpeech():
+            print("phrase: " + str(phrase))
+            if (phrase == "play" or phrase == "start"):
                 client.send_message('/g', 1)
-        except sr.UnknownValueError:
-            print("[speech recognition] Google Speech Recognition could not understand audio")
-        except sr.RequestError as e:
-            print("[speech recognition] Could not request results from Google Speech Recognition service; {0}".format(e))
+            if (phrase == "insane"):
+                client.send_message('/l', 3)
+            if (phrase == "easy"):
+                client.send_message('/l', 2)
+            if (phrase == "hard"):
+                client.send_message('/l', 1)
+            if (phrase == "pause"):
+                client.send_message('/g', 0)
+            if (phrase == "paddle"):
+                client.send_message('/b', 0)
+        # obtain audio from the microphone
+        # /*
+        # r = sr.Recognizer()
+        # with sr.Microphone() as source:
+        #     print("[speech recognition] Say something!")
+        #     audio = r.listen(source)
+        # # recognize speech using Google Speech Recognition
+        # try:
+        #     # for testing purposes, we're just using the default API key
+        #     # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
+        #     # instead of `r.recognize_google(audio)`
+        #     recog_results = r.recognize_google(audio)
+            
+        #     print("[speech recognition] Google Speech Recognition thinks you said \"" + recog_results + "\"")
+        #     # if recognizing quit and exit then exit the program
+        #     if recog_results == "play" or recog_results == "start":
+        #         client.send_message('/g', 1)
+        # except sr.UnknownValueError:
+        #     print("[speech recognition] Google Speech Recognition could not understand audio")
+        # except sr.RequestError as e:
+        #     print("[speech recognition] Could not request results from Google Speech Recognition service; {0}".format(e))
+        # */
+#Pocket Sphinx 
+
+
 # -------------------------------------#
 
 # Player: pitch & volume detection
@@ -325,6 +432,9 @@ def sense_microphone():
         # it has six decimal numbers.
         volume = "{:.6f}".format(volume)
 
+        #Freq controlled paddle
+        p_pos = (pitch*450)/5000
+        client.send_message('/p', p_pos)
         # uncomment these lines if you want pitch or volume
         if debug:
             print("pitch "+str(pitch)+" volume "+str(volume))
@@ -511,12 +621,16 @@ class Model(object):
         b.x_old, b.y_old = b.x, b.y
         b.x += b.vec_x * self.ball_speed 
         b.y += b.vec_y * self.ball_speed
+        #wave sound
+        #print("b.y: " + str(b.y))
         self.check_if_oob_top_bottom()  # oob: out of bounds
         self.check_if_oob_sides()
         self.check_if_paddled()
         if (client_1 != None):
+            #play_beep(frequency=(165 + 3*(b.y)), duration_ms=500)
             client_1.send_message("/ball", [b.x, b.y])
         if (client_2 != None):
+            #play_beep(frequency=(165 + 3*(b.y)), duration_ms=500)
             client_2.send_message("/ball", [b.x, b.y])
 
     def toggle_menu(self):
@@ -785,7 +899,9 @@ class Window(pyglet.window.Window):
                 client_2.send_message("/powerup", power_up_type)
 
         if (power_up_type != 0 and time.time() > last_power_up + power_up_duration):
-            # print("reset powerup")
+            print("reset powerup")
+            say("reset powerup ")
+
             power_up_type = 0
             p1_activated = 0
             p2_activated = 0
