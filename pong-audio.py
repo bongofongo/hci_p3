@@ -446,10 +446,10 @@ def listen_to_speech():
                 stop_instructions = 1
             if (recog_results == "quit"):
                 sys.exit()
-        # except sr.UnknownValueError:
-        #     print("[speech recognition] Google Speech Recognition could not understand audio")
-        # except sr.RequestError as e:
-        #     print("[speech recognition] Could not request results from Google Speech Recognition service; {0}".format(e))
+        except sr.UnknownValueError:
+            print("[speech recognition] Google Speech Recognition could not understand audio")
+        except sr.RequestError as e:
+            print("[speech recognition] Could not request results from Google Speech Recognition service; {0}".format(e))
         # */
 #Pocket Sphinx 
 
