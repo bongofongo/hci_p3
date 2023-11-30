@@ -42,8 +42,7 @@ player = Player()
 player.open_stream()
 synthesizer = Synthesizer(osc1_waveform=Waveform.sine, osc1_volume=1.0, use_osc2=False)
 
-def balltobeep(x):
-    return 540 - (x * 0.67)
+
 
 
 from pythonosc import osc_server
@@ -80,6 +79,7 @@ p2_activated = 0
 last_power_up = time.time()
 power_up_duration = 10
 power_up_type = 0
+stop_instrutions = 0
 
 level = 1
 game_start = 0
@@ -223,10 +223,13 @@ def miss():
 
 miss()
 
-
 def say(s):
     call(["python3", "speak.py", s, voice1])
-
+    
+def balltobeep(x):
+    return 540 - (x * 0.67)
+    
+say('Welcome to Pong')
 #say("For instructions, please say 'help'.")
 
 #winsound.Beep(330, 1000)
@@ -365,44 +368,84 @@ quit = False
 p1_score = 0
 p2_score = 0
 
-
+def options():
+    if (stop_instructions == 0):
+        say("The paddle moves with the pitch of your voice from E3 to C5.")
+    if (stop_instructions == 0):
+        say("Say easy, medium, or hard to select your difficulty")
+    if (stop_instructions == 0):
+        say("say start or play to start the game")
+    if (stop_instructions == 0):
+        say("say stop at any time to stop these options")
+    if (stop_instructions == 0):
+        say("say pause to pause the game")
+    if (stop_instructions == 0):
+        say("say quit to quit the game")
+    if (stop_instructions == 0):
+        say("say paddle to use your big paddle power")
+    if (stop_instructions == 0):
+        say("say help to repeat these options")
+        
 # Player: speech recognition functions using google api
 # TODO: you can use this for input, add function like "client.send_message()" to control the host game
 # -------------------------------------#
 def listen_to_speech():
     global quit
     while not quit:
-        for phrase in LiveSpeech():
-            print("phrase: " + str(phrase))
-            if (phrase == "play" or phrase == "start"):
-                client.send_message('/g', 1)
-            if (phrase == "insane"):
-                client.send_message('/l', 3)
-            if (phrase == "easy"):
-                client.send_message('/l', 2)
-            if (phrase == "hard"):
-                client.send_message('/l', 1)
-            if (phrase == "pause"):
-                client.send_message('/g', 0)
-            if (phrase == "paddle"):
-                client.send_message('/b', 0)
+        # for phrase in LiveSpeech():
+        #     print("phrase: " + str(phrase))
+        #     if (phrase == "play" or phrase == "start"):
+        #         client.send_message('/g', 1)
+        #     if (phrase == "insane"):
+        #         client.send_message('/l', 3)
+        #     if (phrase == "easy"):
+        #         client.send_message('/l', 2)
+        #     if (phrase == "hard"):
+        #         client.send_message('/l', 1)
+        #     if (phrase == "pause"):
+        #         client.send_message('/g', 0)
+        #     if (phrase == "paddle"):
+        #         client.send_message('/b', 0)
         # obtain audio from the microphone
         # /*
-        # r = sr.Recognizer()
-        # with sr.Microphone() as source:
-        #     print("[speech recognition] Say something!")
-        #     audio = r.listen(source)
-        # # recognize speech using Google Speech Recognition
-        # try:
-        #     # for testing purposes, we're just using the default API key
-        #     # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
-        #     # instead of `r.recognize_google(audio)`
-        #     recog_results = r.recognize_google(audio)
+        r = sr.Recognizer()
+        with sr.Microphone() as source:
+            print("[speech recognition] Say something!")
+            audio = r.listen(source)
+        # recognize speech using Google Speech Recognition
+        try:
+            # for testing purposes, we're just using the default API key
+            # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
+            # instead of `r.recognize_google(audio)`
+            recog_results = r.recognize_google(audio)
             
-        #     print("[speech recognition] Google Speech Recognition thinks you said \"" + recog_results + "\"")
-        #     # if recognizing quit and exit then exit the program
-        #     if recog_results == "play" or recog_results == "start":
-        #         client.send_message('/g', 1)
+            print("[speech recognition] Google Speech Recognition thinks you said \"" + recog_results + "\"")
+            # if recognizing quit and exit then exit the program
+            if recog_results == "play" or recog_results == "start":
+                client.send_message('/g', 1)
+            if (recog_results == "insane"):
+                client.send_message('/l', 3)
+                say("Insane mode starting")
+            if (recog_results == "easy"):
+                client.send_message('/l', 2)
+                say("easy mode starting")
+            if (recog_results == "hard"):
+                client.send_message('/l', 1)
+                say("hard mode starting")
+            if (recog_results == "pause"):
+                client.send_message('/g', 0)
+                say("game paused")
+            if (recog_results == "paddle"):
+                client.send_message('/b', 0)
+                say("big paddle enabled")
+            if (recog_results == "help"):
+                stop_instructions = 0
+                options()
+                stop_instructions = 1
+            if (recog_results == "stop"):
+                stop_instructions = 1
+            if (recog_results == "quit"):
+                sys.exit()
         # except sr.UnknownValueError:
         #     print("[speech recognition] Google Speech Recognition could not understand audio")
         # except sr.RequestError as e:
