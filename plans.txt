@@ -47,6 +47,38 @@ Player voice commands:
 
         say "quit"
 
+
+sound1 = pyglet.resource.media('piano-keys/E3.mp3')
+sound2 = pyglet.resource.media('piano-keys/F3.mp3')
+sound3 = pyglet.resource.media('piano-keys/G3.mp3')
+sound4 = pyglet.resource.media('piano-keys/A3.mp3')
+sound5 = pyglet.resource.media('piano-keys/B3.mp3')
+sound6 = pyglet.resource.media('piano-keys/C4.mp3')
+sound7 = pyglet.resource.media('piano-keys/D4.mp3')
+sound8 = pyglet.resource.media('piano-keys/E4.mp3')
+sound9 = pyglet.resource.media('piano-keys/F4.mp3')
+sound10 = pyglet.resource.media('piano-keys/G4.mp3')
+sound11 = pyglet.resource.media('piano-keys/A4.mp3')
+sound12 = pyglet.resource.media('piano-keys/B4.mp3')
+sound13 = pyglet.resource.media('piano-keys/C5.mp3')
+sound14 = pyglet.resource.media('piano-keys/D5.mp3')
+sound15 = pyglet.resource.media('piano-keys/E5.mp3')
+
+sound1 = pyglet.resource.media('piano-keys/E3.mp3', streaming=False)
+sound2 = pyglet.resource.media('piano-keys/F3.mp3', streaming=False)
+sound3 = pyglet.resource.media('piano-keys/G3.mp3', streaming=False)
+sound4 = pyglet.resource.media('piano-keys/A3.mp3', streaming=False)
+sound5 = pyglet.resource.media('piano-keys/B3.mp3', streaming=False)
+sound6 = pyglet.resource.media('piano-keys/C4.mp3', streaming=False)
+sound7 = pyglet.resource.media('piano-keys/D4.mp3', streaming=False)
+sound8 = pyglet.resource.media('piano-keys/E4.mp3', streaming=False)
+sound9 = pyglet.resource.media('piano-keys/F4.mp3', streaming=False)
+sound10 = pyglet.resource.media('piano-keys/G4.mp3', streaming=False)
+sound11 = pyglet.resource.media('piano-keys/A4.mp3', streaming=False)
+sound12 = pyglet.resource.media('piano-keys/B4.mp3', streaming=False)
+sound13 = pyglet.resource.media('piano-keys/C5.mp3', streaming=False)
+sound14 = pyglet.resource.media('piano-keys/D5.mp3', streaming=False)
+sound15 = pyglet.resource.media('piano-keys/E5.mp3', streaming=False)
     Game: 
 
         say "pause"

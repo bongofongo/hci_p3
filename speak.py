@@ -12,6 +12,5 @@ def say(s):
 engine = init_engine()
 engine.setProperty('voice', sys.argv[2])
 engine.setProperty('rate', 180) 
-engine.setProperty('volume',0.9) 
 
 say(str(sys.argv[1])) # Here it will get the text through sys from main file

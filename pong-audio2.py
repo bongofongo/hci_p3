@@ -36,13 +36,14 @@ import argparse
 import pyttsx3
 from synthesizer import Player, Synthesizer, Waveform
 from pocketsphinx import LiveSpeech
-pyglet.options['audio'] = ('openal', 'pulse', 'directsound', 'silent')
-
-#player = Player()
-#player.open_stream()
-#synthesizer = Synthesizer(osc1_waveform=Waveform.sine, osc1_volume=1.0, use_osc2=False)
 
 
+player = Player()
+player.open_stream()
+synthesizer = Synthesizer(osc1_waveform=Waveform.sine, osc1_volume=1.0, use_osc2=False)
+
+def balltobeep(x):
+    return 540 - (x * 0.67)
 
 
 from pythonosc import osc_server
@@ -51,8 +52,6 @@ from pythonosc import udp_client
 from pydub import AudioSegment
 from pydub.generators import Sine
 import simpleaudio as sa
-
-
 
 
 mode = ''
@@ -79,7 +78,6 @@ p2_activated = 0
 last_power_up = time.time()
 power_up_duration = 10
 power_up_type = 0
-stop_instrutions = 0
 
 level = 1
 game_start = 0
@@ -95,7 +93,6 @@ if __name__ == '__main__' :
     parser.add_argument('--debug', action='store_true', help='show debug info')
     args = parser.parse_args()
     print("> run as " + args.mode)
-    print("args-mode: " + args.mode)
     mode = args.mode
     if (args.host_ip):
         host_ip = args.host_ip
@@ -224,51 +221,21 @@ def miss():
 
 miss()
 
+
 def say(s):
     call(["python3", "speak.py", s, voice1])
     
-def balltobeep(x):
-    return 540 - (x * 0.67)
     
-sound15 = pyglet.resource.media('new_mp3/E3.mp3', streaming=False)
-sound14 = pyglet.resource.media('new_mp3/F3.mp3', streaming=False)
-sound13 = pyglet.resource.media('new_mp3/G3.mp3', streaming=False)
-sound12 = pyglet.resource.media('new_mp3/A3.mp3', streaming=False)
-sound11 = pyglet.resource.media('new_mp3/B3.mp3', streaming=False)
-sound10 = pyglet.resource.media('new_mp3/C4.mp3', streaming=False)
-sound9 = pyglet.resource.media('new_mp3/D4.mp3', streaming=False)
-sound8 = pyglet.resource.media('new_mp3/E4.mp3', streaming=False)
-sound7 = pyglet.resource.media('new_mp3/F4.mp3', streaming=False)
-sound6 = pyglet.resource.media('new_mp3/G4.mp3', streaming=False)
-sound5 = pyglet.resource.media('new_mp3/A4.mp3', streaming=False)
-sound4 = pyglet.resource.media('new_mp3/B4.mp3', streaming=False)
-sound3 = pyglet.resource.media('new_mp3/C5.mp3', streaming=False)
-sound2 = pyglet.resource.media('new_mp3/D5.mp3', streaming=False)
-sound1 = pyglet.resource.media('new_mp3/E5.mp3', streaming=False)
-sound_list = [sound1, sound2, sound3, sound4, sound5, sound6, sound7, sound8, sound9, sound10, sound11, sound12, sound13, sound14, sound15]
-
-#takes ball.y as input
-def play_piano(x):
-    x = round(x/30) # should scale pixels down to numbers (ie. 450 -> 15)
-    if x == 0:
-        x = 1
     
-    if 1 <= x <= 15:
-        # Get the corresponding sound from the list
-        sound = sound_list[x - 1]
-        
-        # Play the selected sound
-        sound.play()
 
-
-say('Welcome to Pong')
+    
 #say("For instructions, please say 'help'.")
 
 #winsound.Beep(330, 1000)
 
 # used to send messages to host
-# def play_sound(freq):
-#     player.play_wave(synthesizer.generate_constant_wave(freq, 0.125))
+def play_sound(freq):
+    player.play_wave(synthesizer.generate_constant_wave(freq, 0.1))
 
 if mode == 'p1':
     host_port = host_port_1
@@ -285,15 +252,8 @@ def on_receive_ball(address, *args):
     #play_sound(balltobeep(args[1]))
     #play_beep2(balltobeep(args[1]))
     #winsound.beep(balltobeep(args[1], 100))
-    current_time = time.time()
-    if current_time - on_receive_ball.last_play_time >= 0.2:
-        play_piano(args[1])
-
-        # Update the last play time
-        on_receive_ball.last_play_time = current_time
-
-# Initialize the last play time
-on_receive_ball.last_play_time = time.time()
+    play_piano(args[1])
+    pass
 
 def on_receive_paddle(address, *args):
     # print("> paddle position: (" + str(args[0]) + ", " + str(args[1]) + ")")
@@ -394,12 +354,12 @@ pDetection = aubio.pitch("default", 2048,
 pDetection.set_unit("Hz")
 pDetection.set_silence(-40)
 
-# def play_beep2(frequency, duration=4, volume=0.5):  
-#     sample_rate = 44100 
-#     t = num.linspace(0, duration / 1000, int(sample_rate * duration / 1000), endpoint=False)
-#     signal = volume * num.sin(2 * num.pi * frequency * t).astype(num.float32)
+def play_beep2(frequency, duration=4, volume=0.5):  
+    sample_rate = 44100 
+    t = num.linspace(0, duration / 1000, int(sample_rate * duration / 1000), endpoint=False)
+    signal = volume * num.sin(2 * num.pi * frequency * t).astype(num.float32)
 
-#     stream.write(signal.tostring())
+    stream.write(signal.tostring())
 # -------------------------------------#
 
 quit = False
@@ -407,31 +367,8 @@ quit = False
 # keeping score of points:
 p1_score = 0
 p2_score = 0
-def keep_first_word(input_string):
-    # Split the string into words
-    words = input_string.split()
-    return  words[0]
-    
 
-    return output_string
-def options():
-    if (stop_instructions == 0):
-        say("The paddle moves with the pitch of your voice from E3 to C5.")
-    if (stop_instructions == 0):
-        say("Say easy, medium, or hard to select your difficulty")
-    if (stop_instructions == 0):
-        say("say start or play to start the game")
-    if (stop_instructions == 0):
-        say("say stop at any time to stop these options")
-    if (stop_instructions == 0):
-        say("say pause to pause the game")
-    if (stop_instructions == 0):
-        say("say quit to quit the game")
-    if (stop_instructions == 0):
-        say("say paddle to use your big paddle power")
-    if (stop_instructions == 0):
-        say("say help to repeat these options")
-        
+
 # Player: speech recognition functions using google api
 # TODO: you can use this for input, add function like "client.send_message()" to control the host game
 # -------------------------------------#
@@ -439,33 +376,19 @@ def listen_to_speech():
     global quit
     while not quit:
         for phrase in LiveSpeech():
-            phrase = str(phrase)
-            print("phrase: " + phrase)
-            if phrase == "play" or phrase == "start":
+            print("phrase: " + str(phrase))
+            if (phrase == "play" or phrase == "start"):
                 client.send_message('/g', 1)
             if (phrase == "insane"):
                 client.send_message('/l', 3)
-                say("Insane mode")
             if (phrase == "easy"):
                 client.send_message('/l', 2)
-                say("easy mode starting")
             if (phrase == "hard"):
                 client.send_message('/l', 1)
-                say("hard mode")
             if (phrase == "pause"):
                 client.send_message('/g', 0)
-                say("game paused")
             if (phrase == "paddle"):
                 client.send_message('/b', 0)
-                say("big paddle enabled")
-            if (phrase == "help"):
-                stop_instructions = 0
-                options()
-                stop_instructions = 1
-            if (phrase == "stop"):
-                stop_instructions = 1
-            if (phrase == "quit"):
-                sys.exit()
         # obtain audio from the microphone
         # /*
         # r = sr.Recognizer()
@@ -479,33 +402,10 @@ def listen_to_speech():
         #     # instead of `r.recognize_google(audio)`
         #     recog_results = r.recognize_google(audio)
             
-        #     print("recog: " + recog_results)
+        #     print("[speech recognition] Google Speech Recognition thinks you said \"" + recog_results + "\"")
         #     # if recognizing quit and exit then exit the program
         #     if recog_results == "play" or recog_results == "start":
         #         client.send_message('/g', 1)
-        #     if (recog_results == "insane"):
-        #         client.send_message('/l', 3)
-        #         say("Insane mode starting")
-        #     if (recog_results == "easy"):
-        #         client.send_message('/l', 2)
-        #         say("easy mode starting")
-        #     if (recog_results == "hard"):
-        #         client.send_message('/l', 1)
-        #         say("hard mode starting")
-        #     if (recog_results == "pause"):
-        #         client.send_message('/g', 0)
-        #         say("game paused")
-        #     if (recog_results == "paddle"):
-        #         client.send_message('/b', 0)
-        #         say("big paddle enabled")
-        #     if (recog_results == "help"):
-        #         stop_instructions = 0
-        #         options()
-        #         stop_instructions = 1
-        #     if (recog_results == "stop"):
-        #         stop_instructions = 1
-        #     if (recog_results == "quit"):
-        #         sys.exit()
         # except sr.UnknownValueError:
         #     print("[speech recognition] Google Speech Recognition could not understand audio")
         # except sr.RequestError as e:
@@ -519,26 +419,12 @@ def listen_to_speech():
 # Player: pitch & volume detection
 # TODO: you can use this for input, add function like "client.send_message()" to control the host game
 # -------------------------------------#
-
-def map_frequency_to_range(frequency):
-    min_frequency = 1  # Minimum frequency in Hz
-    max_frequency = 300  # Maximum frequency in Hz
-
-    min_output = 0  # Minimum value in the output range
-    max_output = 450  # Maximum value in the output range
-
-    mapped_value = max_output - ((frequency - min_frequency) / (max_frequency - min_frequency)) * (max_output - min_output)
-
-    mapped_value = max(min_output, min(mapped_value, max_output))
-
-    return int(mapped_value)  # Convert to an integer if needed
-
 def sense_microphone():
     global quit
     global debug
     while not quit:
         data = stream.read(1024,exception_on_overflow=False)
-        samples = num.frombuffer(data,
+        samples = num.fromstring(data,
             dtype=aubio.float_type)
 
         # Compute the pitch of the microphone input
@@ -550,11 +436,11 @@ def sense_microphone():
         volume = "{:.6f}".format(volume)
 
         #Freq controlled paddle
-        p_pos = map_frequency_to_range(pitch)
+        p_pos = (pitch*450)/5000
         client.send_message('/p', p_pos)
         # uncomment these lines if you want pitch or volume
-        #if debug:
-        #print("pitch "+str(pitch)+" volume "+str(volume))
+        if debug:
+            print("pitch "+str(pitch)+" volume "+str(volume))
 # -------------------------------------#
 
 # Host game mechanics: no need to change below
@@ -1079,17 +965,15 @@ if (mode == 'p1') or (mode == 'p2'):
 if mode == 'host':
     window = Window()
     pyglet.app.run()
+
 # Player
-print("mode: " + mode)
 if mode == 'p1':
     player_port = player_1_port
-    say("welcome player 1. Please say help for instructions")
 if mode == 'p2':
-    say("welcome player 2. Please say help for instructions")
     player_port = player_2_port
 
 if (mode == 'p1') or (mode == 'p2'):
-    print("point 3")
+
     # OSC thread
     # -------------------------------------#
     player_server = osc_server.ThreadingOSCUDPServer((player_ip, player_port), dispatcher_player)
@@ -1103,12 +987,6 @@ if (mode == 'p1') or (mode == 'p2'):
     while True:
       m = input("> send: ")
       cmd = m.split(' ')
-      if cmd[0] == "h":
-        stop_instructions = 0
-        options()
-
-      if cmd[0] == "s":
-        stop_instructions = 1
       if len(cmd) == 2:
         client.send_message("/"+cmd[0], int(cmd[1]))
       if len(cmd) == 1:
